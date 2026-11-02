@@ -1,0 +1,243 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Interactive Boy</title>
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  color: white;
+  background: radial-gradient(circle, #303d70, #101426);
+}
+
+.container {
+  text-align: center;
+  padding: 20px;
+}
+
+h1 { font-size: clamp(28px, 5vw, 42px); }
+
+p { color: #cbd5f5; }
+
+.stage {
+  height: 410px;
+  width: min(90vw, 420px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 700px;
+}
+
+#boy {
+  width: 230px;
+  height: 360px;
+  transition: transform .18s ease-out;
+  transform-origin: bottom center;
+}
+
+#head {
+  transform-box: view-box;
+  transform-origin: 150px 125px;
+  transition: transform .18s ease-out;
+}
+
+button {
+  border: 0;
+  border-radius: 25px;
+  padding: 12px 22px;
+  margin: 7px;
+  cursor: pointer;
+  background: #7665ff;
+  color: white;
+  font-size: 15px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Meet My Interactive Buddy!</h1>
+  <p>Move your mouse and watch him follow you.</p>
+
+  <div class="stage" id="stage">
+    <svg id="boy" viewBox="0 0 300 470"
+         xmlns="http://www.w3.org/2000/svg">
+
+      <defs>
+        <linearGradient id="skin" x2="1" y2="1">
+          <stop stop-color="#ffd9b8"/>
+          <stop offset="1" stop-color="#e9a982"/>
+        </linearGradient>
+        <linearGradient id="blue" x2="1" y2="1">
+          <stop stop-color="#579bff"/>
+          <stop offset="1" stop-color="#204ba9"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Legs -->
+      <path d="M105 310 L100 410 L145 410 L148 310Z"
+            fill="#26334f"/>
+      <path d="M155 310 L160 410 L205 410 L195 310Z"
+            fill="#26334f"/>
+
+      <!-- Shoes -->
+      <path d="M100 402 L145 402 L150 430
+               Q120 445 94 428Z" fill="white"/>
+      <path d="M160 402 L205 402 L215 428
+               Q180 445 158 428Z" fill="white"/>
+
+      <!-- Arms -->
+      <path d="M110 180 Q75 190 65 280
+               L55 305 Q60 320 80 310
+               L125 220Z" fill="url(#blue)"/>
+      <path d="M190 180 Q225 190 235 280
+               L245 305 Q240 320 220 310
+               L175 220Z" fill="url(#blue)"/>
+
+      <!-- Hands -->
+      <circle cx="65" cy="312" r="13" fill="url(#skin)"/>
+      <circle cx="235" cy="312" r="13" fill="url(#skin)"/>
+
+      <!-- Body -->
+      <path d="M110 170 Q150 155 190 170
+               L210 320 Q150 345 90 320Z"
+            fill="url(#blue)" stroke="#173b85" stroke-width="4"/>
+
+      <path d="M130 172 L150 205 L170 172
+               L162 328 L138 328Z" fill="white"/>
+
+      <path d="M150 205 L150 327"
+            stroke="#d3e2ff" stroke-width="3"/>
+
+      <circle cx="150" cy="245" r="4" fill="#234b91"/>
+      <circle cx="150" cy="270" r="4" fill="#234b91"/>
+
+      <!-- Head -->
+      <g id="head">
+        <path d="M102 90 Q100 35 150 35
+                 Q200 35 198 90 L193 145
+                 Q180 180 150 178
+                 Q120 180 107 145Z"
+              fill="url(#skin)" stroke="#d69b79" stroke-width="2"/>
+
+        <!-- Ears -->
+        <ellipse cx="102" cy="120" rx="12" ry="17" fill="#eab18e"/>
+        <ellipse cx="198" cy="120" rx="12" ry="17" fill="#eab18e"/>
+
+        <!-- Hair -->
+        <path d="M100 100 Q85 40 130 30
+                 Q185 12 205 75 L198 105
+                 Q180 72 160 70
+                 Q130 90 100 100Z" fill="#263047"/>
+
+        <!-- Eyes -->
+        <ellipse cx="130" cy="118" rx="12" ry="14" fill="white"/>
+        <ellipse cx="170" cy="118" rx="12" ry="14" fill="white"/>
+
+        <g id="eyes">
+          <circle cx="132" cy="120" r="6" fill="#293c60"/>
+          <circle cx="172" cy="120" r="6" fill="#293c60"/>
+          <circle cx="134" cy="117" r="2" fill="white"/>
+          <circle cx="174" cy="117" r="2" fill="white"/>
+        </g>
+
+        <!-- Nose and smile -->
+        <path d="M150 123 Q143 139 152 140"
+              fill="none" stroke="#c98368" stroke-width="3"/>
+        <path d="M132 151 Q150 169 169 151"
+              fill="none" stroke="#974c4c"
+              stroke-width="3" stroke-linecap="round"/>
+      </g>
+    </svg>
+  </div>
+
+  <button onclick="demo()">Show Movement</button>
+  <button onclick="resetBoy()">Reset</button>
+  <p id="message">Move your mouse around the screen!</p>
+</div>
+
+<script>
+const boy = document.getElementById("boy");
+const head = document.getElementById("head");
+const eyes = document.getElementById("eyes");
+const stage = document.getElementById("stage");
+const message = document.getElementById("message");
+
+let demoTimer;
+
+function moveBoy(x, y) {
+  const rect = stage.getBoundingClientRect();
+
+  const nx = Math.max(-1, Math.min(1,
+    (x - (rect.left + rect.width / 2)) / (rect.width / 2)
+  ));
+
+  const ny = Math.max(-1, Math.min(1,
+    (y - (rect.top + rect.height / 2)) / (rect.height / 2)
+  ));
+
+  boy.style.transform =
+    `translate(${nx * 9}px, ${-ny * 3}px) rotate(${nx * 5}deg)`;
+
+  head.style.transform =
+    `rotate(${nx * 13}deg) translateY(${ny * 4}px)`;
+
+  eyes.setAttribute("transform",
+    `translate(${nx * 4} ${ny * 3})`);
+}
+
+document.addEventListener("pointermove", e => {
+  if (e.pointerType !== "mouse") return;
+  clearTimeout(demoTimer);
+  moveBoy(e.clientX, e.clientY);
+});
+
+function resetBoy() {
+  clearTimeout(demoTimer);
+  boy.style.transform = "none";
+  head.style.transform = "none";
+  eyes.removeAttribute("transform");
+  message.textContent = "Move your mouse around the screen!";
+}
+
+function demo() {
+  clearTimeout(demoTimer);
+
+  const r = stage.getBoundingClientRect();
+  const points = [
+    [r.left + r.width * .15, r.top + r.height * .5],
+    [r.left + r.width * .85, r.top + r.height * .5],
+    [r.left + r.width * .5, r.top + r.height * .15],
+    [r.left + r.width * .5, r.top + r.height * .5]
+  ];
+
+  let i = 0;
+  message.textContent = "Look at me moving!";
+
+  function next() {
+    if (i >= points.length) {
+      resetBoy();
+      return;
+    }
+
+    moveBoy(points[i][0], points[i][1]);
+    i++;
+    demoTimer = setTimeout(next, 650);
+  }
+
+  next();
+}
+</script>
+
+</body>
+</html>
